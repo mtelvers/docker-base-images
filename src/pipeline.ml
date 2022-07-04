@@ -119,6 +119,11 @@ module Make (OCurrent : S.OCURRENT) = struct
     let squash distro =
       Dockerfile_distro.os_family_of_distro distro <> `Windows
 
+    (* 2022-07-18: Windows Containers don't support BuildKit.
+       https://github.com/microsoft/Windows-Containers/issues/34 *)
+    let buildkit distro =
+      Dockerfile_distro.os_family_of_distro distro <> `Windows
+
     let install_opam ~arch ~ocluster ~distro ~repos ~push_target =
       let arch_name = Ocaml_version.string_of_arch arch in
       let distro_tag, os_family = Dockerfile_distro.(tag_of_distro distro, os_family_of_distro distro) in
@@ -156,6 +161,7 @@ module Make (OCurrent : S.OCURRENT) = struct
       in
       let options = { Cluster_api.Docker.Spec.defaults with
                       squash = squash distro;
+                      buildkit = buildkit distro;
                       include_git = true } in
       let cache_hint = Printf.sprintf "opam-%s" distro_tag in
       let opam_repository = match os_family with `Windows -> opam_repository_mingw_opam2 | _ -> opam_repository_master in
@@ -171,7 +177,10 @@ module Make (OCurrent : S.OCURRENT) = struct
       let> base = base in
       let dockerfile = `Contents (install_compiler_df ~distro ~arch ~switch ?windows_port base |> Dockerfile.string_of_t) in
       (* ([include_git] doesn't do anything here, but it saves rebuilding during the upgrade) *)
-      let options = { Cluster_api.Docker.Spec.defaults with squash = squash distro; include_git = true } in
+      let options = { Cluster_api.Docker.Spec.defaults with
+                      squash = squash distro;
+                      buildkit = buildkit distro;
+                      include_git = true } in
       let cache_hint = Printf.sprintf "%s-%s-%s" (Ocaml_version.to_string switch) arch_name base in
       OCluster.Raw.build_and_push ocluster ~src:[] dockerfile
         ~cache_hint
@@ -183,7 +192,10 @@ module Make (OCurrent : S.OCURRENT) = struct
       Current.component "archive" |>
       let> base = base in
       let dockerfile = `Contents (install_package_archive base |> Dockerfile.string_of_t) in
-      let options = { Cluster_api.Docker.Spec.defaults with squash = squash distro; include_git = true } in
+      let options = { Cluster_api.Docker.Spec.defaults with
+                      squash = squash distro;
+                      buildkit = buildkit distro;
+                      include_git = true } in
       let cache_hint = Printf.sprintf "archive-%s" base in
       OCluster.Raw.build_and_push ocluster ~src:[] dockerfile
         ~cache_hint

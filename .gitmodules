@@ -4,8 +4,8 @@
 	branch = master
 [submodule "ocaml-dockerfile"]
 	path = ocaml-dockerfile
-	url = https://github.com/avsm/ocaml-dockerfile.git
-	branch = master
+	url = https://github.com/MisterDA/ocaml-dockerfile.git
+	branch = copy-heredoc
 [submodule "ocluster"]
 	path = ocluster
 	url = https://github.com/ocurrent/ocluster.git
