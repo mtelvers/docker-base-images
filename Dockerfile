@@ -15,6 +15,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     m4 \
     pkg-config
 RUN cd ~/opam-repository && git fetch -q origin master && git reset --hard 1abfcdbf14f12a32c14d0d6e078d94634fdcc07a && opam update
+RUN opam pin add dockerfile https://github.com/mtelvers/ocaml-dockerfile.git#patch -y --no-action && \
+    opam pin add dockerfile-opam https://github.com/mtelvers/ocaml-dockerfile.git#patch -y --no-action && \
+    opam pin add dockerfile-cmd https://github.com/mtelvers/ocaml-dockerfile.git#patch -y --no-action
 COPY --chown=opam --link base-images.opam /src/
 WORKDIR /src
 RUN --mount=type=cache,target=/home/opam/.opam/download-cache,sharing=locked,uid=1000,gid=1000 \
